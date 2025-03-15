@@ -1,7 +1,9 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import { useId } from "react";
+import { nanoid } from "nanoid";
 import { useDispatch } from 'react-redux';
-import { addContact } from '../../redux/contactsOps'; // Оновлено імпорт
+import { addContact } from "../../redux/contactsSlice";
 import css from "./ContactForm.module.css";
 
 export default function ContactForm() {
@@ -13,21 +15,28 @@ export default function ContactForm() {
     };
 
     const validationSchema = Yup.object({
-        name: Yup.string()
-            .min(3, 'Name must be at least 3 characters')
-            .max(50, 'Name must be less than 50 characters')
-            .required('Name is required'),
-        number: Yup.string()
-            .matches(/^[0-9-]+$/, 'Number must contain only digits')
-            .min(3, 'Number must be at least 3 characters')
-            .max(50, 'Number must be less than 50 characters')
-            .required('Number is required'),
+      name: Yup.string()
+      .min(3, "Too Short!")
+      .max(50, "Too Long!")
+      .required("Required"),
+    number: Yup.string()
+      .matches(
+        /^\d{3}-\d{2}-\d{2}$/,
+        "Phone number must be in the format 000-00-00"
+      )
+      .required("Required"),
     });
 
-    const handleSubmit = (values, { resetForm }) => {
-        dispatch(addContact(values));
-        resetForm();
+    const handleSubmit = (values, actions) => {
+      console.log(values);
+      dispatch(
+        addContact({ id: nanoid(), name: values.name, number: values.number })
+      );
+      actions.resetForm();
     };
+    
+  const nameId = useId();
+  const numberId = useId();
 
     return (
         <div>
@@ -39,13 +48,13 @@ export default function ContactForm() {
             >
                 <Form className={css.q}>
                     <div className={css.l}> 
-                        <label>Name</label>
-                        <Field type="text" id="name" name="name" />
+                        <label htmlFor={nameId}>Name</label>
+                        <Field type="text"  id={nameId} name="name" />
                         <ErrorMessage name="name" component="div" />
                     </div>
                     <div className={css.l}>
-                        <label>Number</label>
-                        <Field type="text" id="number" name="number" pattern="[0-9-]+" />
+                        <label htmlFor={numberId}>Number</label>
+                        <Field type="text" id={numberId} name="number" />
                         <ErrorMessage name="number" component="div" />
                     </div>
                     <button className={css.b} type="submit">Add Contact</button>
